@@ -69,6 +69,7 @@ const RegisterForm = () => {
           required
           sx={{ mb: 4 }}
           {...register("eMail", {
+            required: true,
             pattern: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
           })}
         />

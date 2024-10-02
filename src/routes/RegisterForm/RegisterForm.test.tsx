@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import RegisterForm from "./RegisterForm";
 
 describe("RegisterForm component", () => {
@@ -7,10 +7,33 @@ describe("RegisterForm component", () => {
     render(<RegisterForm />);
   });
 
-  it("should have submit button disabled by default with empty field values", () => {
-    // Validate title
-    expect(screen.getByText(/Register Form/i)).toBeInTheDocument();
+  const formFieldsTestCases = [
+    {
+      label: "First Name",
+      type: "textbox",
+    },
+    {
+      label: "Last Name",
+      type: "textbox",
+    },
+    {
+      label: "Email",
+      type: "textbox",
+    },
+    {
+      label: "Age",
+      type: "spinbutton",
+    },
+  ];
+  formFieldsTestCases.forEach((test) => {
+    it(`should have displayed field: ${test.label}`, () => {
+      expect(
+        screen.getByRole(test.type, { name: test.label })
+      ).toBeInTheDocument();
+    });
+  });
 
+  it("should have submit button disabled by default with empty field values", () => {
     // Validate fields
     expect(
       screen.getByRole("textbox", { name: /First Name/i })
@@ -35,7 +58,7 @@ describe("RegisterForm component", () => {
     expect(submitButton).toBeDisabled();
   });
 
-  it("should enable submit button once fields have values", () => {
+  it("should enable submit button once fields have values", async () => {
     // Validate submit button its disabled at the beginning
     expect(screen.getByRole("button", { name: /Register/i })).toBeDefined();
     const submitButton = screen.getByRole("button", { name: /Register/i });
@@ -54,10 +77,16 @@ describe("RegisterForm component", () => {
     expect(emailInput).toHaveValue("email@domain.com");
 
     const ageInput = screen.getByRole("spinbutton", { name: /Age/i });
-    fireEvent.change(ageInput, { target: { value: 99 } });
-    expect(ageInput).toHaveValue(99);
-    
-    // fireEvent.click(submitButton);
-    // expect(screen.queryByText(/Form Submitted!/i)).toBeDefined();
+    fireEvent.change(ageInput, { target: { value: 42 } });
+    expect(ageInput).toHaveValue(42);
+
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /Register/i })).toBeEnabled()
+    );
+
+    fireEvent.click(submitButton);
+    await waitFor(() =>
+      expect(screen.queryByText(/Form Submitted!/i)).toBeVisible()
+    );
   });
 });
